@@ -3,11 +3,13 @@
 /**
  * Module dependencies.
  */
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 
-var app = require("../app");
-var debug = require("debug")("imagesitebackend:server");
-var http = require("http");
+import app from "../app.js";
+import debugFactory from "debug";
+const debug = debugFactory("imagesitebackend:server");
+import http from "http";
 
 /**
  * Get port from environment and store in Express.
