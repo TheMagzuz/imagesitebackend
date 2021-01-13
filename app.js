@@ -8,6 +8,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
+import dbRouter from "./routes/db.js";
 
 var app = express();
 
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/db", dbRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

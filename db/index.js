@@ -1,8 +1,12 @@
-import { MongoClient } from "mongodb";
+import mongo from "mongodb";
+const MongoClient = mongo.MongoClient;
+import dotenv from "dotenv";
+dotenv.config();
 
 const dbUrl = "mongodb://" + process.env.MONGO_IP;
+console.log(dbUrl);
 
-const client = new MongoClient(dbUrl);
+const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 
 const pageSize = 10;
 
