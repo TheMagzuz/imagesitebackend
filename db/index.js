@@ -3,26 +3,60 @@ const MongoClient = mongo.MongoClient;
 import dotenv from "dotenv";
 dotenv.config();
 
-const dbUrl = "mongodb://" + process.env.MONGO_IP;
-console.log(dbUrl);
+if (process.env.USE_DB != "false") {
+  const dbUrl = "mongodb://" + process.env.MONGO_IP;
 
-const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 
-const pageSize = 10;
+  const pageSize = 10;
 
-await client.connect();
-const database = client.db("imagesite");
-const imagesCollection = database.collection("images");
-const albumsCollection = database.collection("albums");
-
+  await client.connect();
+  const database = client.db("imagesite");
+  const imagesCollection = database.collection("images");
+  const albumsCollection = database.collection("albums");
+} else {
+  console.log("Starting without database support");
+}
 export default {
   // GET images
   getImage: async function (id) {
     return await imagesCollection.findOne({ id: id });
   },
-  getImagePage: async function (page) {
-    return await imagesCollection
-      .find()
+  getImagePage: async function (page, sort, searchQuery) {
+    let inTags = [];
+    let ninTags = [];
+
+    if (searchQuery) {
+      for (var tag of searchQuery.split(" ")) {
+        if (tag.startsWith("!")) {
+          ninTags.push(tag.substr(1));
+        } else {
+          inTags.push(tag);
+        }
+      }
+    }
+
+    let filter = { tags: {} };
+
+    if (inTags.length > 0) {
+      filter.tags.$in = inTags;
+    }
+    if (ninTags.length > 0) {
+      filter.tags.$nin = ninTags;
+    }
+    if (!filter.tags.$in && !filter.tags.$nin) {
+      filter = {};
+    }
+
+    let cursor = imagesCollection.find(filter);
+
+    if (sort.sortBy == "upvotes") {
+      cursor = cursor.sort({ upvotes: sort.reverse ? 1 : -1 });
+    } else {
+      cursor = cursor.sort({ _id: sort.reverse ? 1 : -1 });
+    }
+
+    return await cursor
       .skip(page * pageSize)
       .limit(pageSize)
       .toArray();
@@ -30,23 +64,23 @@ export default {
 
   // UPDATE images
   addImage: async function (image) {
-    await imagesCollection.insertOne(image);
+    return await imagesCollection.insertOne(image);
   },
-  updateImage: function (id, update) {
+  updateImage: async function (id, update) {
     const filter = { id: id };
-    return imagesCollection.updateOne(filter, update);
+    return await imagesCollection.updateOne(filter, update);
   },
   upvoteImage: async function (id) {
     const update = { $inc: { upvotes: 1 } };
-    await updateImage(id, update);
+    return await this.updateImage(id, update);
   },
   downvoteImage: async function (id) {
     const update = { $inc: { upvotes: -1 } };
-    await updateImage(id, update);
+    return await this.updateImage(id, update);
   },
   updateTags: async function (id, newTags) {
     const update = { $set: { tags: newTags } };
-    await updateImage(id, update);
+    return await this.updateImage(id, update);
   },
 
   // GET albums
@@ -55,8 +89,8 @@ export default {
   },
 
   // UPDATE albums
-  updateAlbum: function (id, update) {
+  updateAlbum: async function (id, update) {
     const filter = { id: id };
-    return albumsCollection.updateOne(filter, update);
+    return await albumsCollection.updateOne(filter, update);
   },
 };

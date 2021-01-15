@@ -50,4 +50,34 @@ router.post("/", async function (req, res) {
   res.status(200).send(imageId).end();
 });
 
+/* GET: Image */
+router.get("/image/:filename(*)", async (req, res) => {
+  let filename = req.params.filename;
+
+  if (!filename) {
+    res.status(400).send("Invalid file name");
+    return;
+  }
+
+  console.log(filename);
+
+  let data;
+
+  try {
+    data = await s3.getObject({ Key: filename, Bucket: BUCKET_NAME }).promise();
+  } catch (e) {
+    if (e.code == "NoSuchKey") {
+      res.status(404).send("File not found");
+      return;
+    } else {
+      res.status(500).end();
+      return;
+    }
+  }
+
+  res.write(data.Body);
+  res.status(200);
+  res.end();
+});
+
 export default router;
