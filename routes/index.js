@@ -95,6 +95,7 @@ router.get("/image/:filename(*)", async (req, res) => {
 
   res
     .setHeader("Content-Type", mime.lookup(path.extname(filename)))
+    .setHeader("Cache-control", "public, max-age=900")
     .write(data.Body);
   res.status(200).end();
 });
