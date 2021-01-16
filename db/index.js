@@ -29,9 +29,9 @@ export default {
     if (searchQuery) {
       for (var tag of searchQuery.split(" ")) {
         if (tag.startsWith("!")) {
-          ninTags.push(tag.substr(1));
+          ninTags.push(new RegExp(tag.substr(1), "i"));
         } else {
-          inTags.push(tag);
+          inTags.push(new RegExp(tag), "i");
         }
       }
     }
