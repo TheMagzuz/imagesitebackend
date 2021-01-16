@@ -18,6 +18,9 @@ aws.config.update({ region: "eu-central-1" });
 const BUCKET_NAME = "imagesite-content";
 const CLOUDFRONT_URL = process.env.CLOUDFRONT_URL;
 
+// The number of bytes a file has to be for it to be streamed
+const STREAM_LIMIT = 10000000;
+
 const s3 = new aws.S3();
 
 const videoExtensions = [".mp4", ".mov", ".webm", ".gif"];
@@ -79,10 +82,12 @@ router.get("/image/:filename(*)", async (req, res) => {
     return;
   }
 
-  let data;
+  let header;
 
   try {
-    data = await s3.getObject({ Key: filename, Bucket: BUCKET_NAME }).promise();
+    header = await s3
+      .headObject({ Key: filename, Bucket: BUCKET_NAME })
+      .promise();
   } catch (e) {
     if (e.code == "NoSuchKey") {
       res.status(404).send("File not found");
@@ -93,11 +98,24 @@ router.get("/image/:filename(*)", async (req, res) => {
     }
   }
 
+  let streamContent = header.ContentLength >= STREAM_LIMIT;
+
   res
     .setHeader("Content-Type", mime.lookup(path.extname(filename)))
-    .setHeader("Cache-control", "public, max-age=900")
-    .write(data.Body);
-  res.status(200).end();
+    .setHeader("Cache-control", "public, max-age=900");
+  if (!streamContent) {
+    let data = await s3
+      .getObject({ Key: filename, Bucket: BUCKET_NAME })
+      .promise();
+
+    res.write(data.Body);
+    res.status(200).end();
+  } else {
+    res.setHeader("Content-Length", header.ContentLength);
+    s3.getObject({ Key: filename, Bucket: BUCKET_NAME })
+      .createReadStream()
+      .pipe(res);
+  }
 });
 
 /* GET: Resized image */
@@ -114,7 +132,9 @@ router.get("/thumbnail/:filename(*)", async (req, res) => {
     bucket: BUCKET_NAME,
     key: filename,
     edits: {
-      width: width,
+      resize: {
+        width: width,
+      },
     },
   };
 
