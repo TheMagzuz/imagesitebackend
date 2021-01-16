@@ -93,4 +93,7 @@ export default {
     const filter = { id: id };
     return await albumsCollection.updateOne(filter, update);
   },
+  addAlbum: async function (album) {
+    return await albumsCollection.insertOne(album);
+  },
 };

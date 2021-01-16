@@ -1,7 +1,5 @@
 import createError from "http-errors";
 import express from "express";
-import path from "path";
-import cookieParser from "cookie-parser";
 import logger from "morgan";
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
@@ -13,7 +11,7 @@ import dbRouter from "./routes/db.js";
 var app = express();
 
 app.use(logger("dev"));
-app.use(fileUpload({ createParentPath: true }));
+app.use(fileUpload({ createParentPath: true, useTempFiles: true }));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,6 +19,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/db", dbRouter);
+
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
