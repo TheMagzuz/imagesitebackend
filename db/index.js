@@ -3,20 +3,21 @@ const MongoClient = mongo.MongoClient;
 import dotenv from "dotenv";
 dotenv.config();
 
-if (process.env.USE_DB != "false") {
-  const dbUrl = "mongodb://" + process.env.MONGO_IP;
+const dbUrl = "mongodb://" + process.env.MONGO_IP;
 
-  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 
-  const pageSize = 10;
+const pageSize = 10;
 
-  await client.connect();
-  const database = client.db("imagesite");
-  const imagesCollection = database.collection("images");
-  const albumsCollection = database.collection("albums");
-} else {
-  console.log("Starting without database support");
-}
+let database, imagesCollection, albumsCollection;
+
+// Eslint doesn't like this, but it's valid
+// https://github.com/eslint/eslint/issues/13178
+await client.connect();
+const database = client.db("imagesite");
+const imagesCollection = database.collection("images");
+const albumsCollection = database.collection("albums");
+
 export default {
   // GET images
   getImage: async function (id) {
