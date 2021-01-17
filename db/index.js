@@ -9,14 +9,13 @@ const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 
 const pageSize = 10;
 
-let database, imagesCollection, albumsCollection;
-
 // Eslint doesn't like this, but it's valid
 // https://github.com/eslint/eslint/issues/13178
 await client.connect();
 const database = client.db("imagesite");
 const imagesCollection = database.collection("images");
 const albumsCollection = database.collection("albums");
+const usersCollection = database.collection("users");
 
 export default {
   // GET images
@@ -96,5 +95,15 @@ export default {
   },
   addAlbum: async function (album) {
     return await albumsCollection.insertOne(album);
+  },
+
+  // GET user
+  getUser: async function (username) {
+    return await usersCollection.findOne({ username: username });
+  },
+
+  // CREATE user
+  createUser: async function (user) {
+    return await usersCollection.insertOne(user);
   },
 };

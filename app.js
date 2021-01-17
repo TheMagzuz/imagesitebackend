@@ -5,8 +5,9 @@ import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
 import cors from "cors";
 import indexRouter from "./routes/index.js";
-import usersRouter from "./routes/users.js";
+import userRouter from "./routes/login.js";
 import dbRouter from "./routes/db.js";
+import requireAuth from "./middleware/auth.middleware.js";
 
 var app = express();
 
@@ -16,8 +17,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use("/user", userRouter);
+
+app.use(requireAuth);
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/db", dbRouter);
 
 app.get("/favicon.ico", (req, res) => res.status(204).end());

@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.824.0",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
@@ -18,6 +19,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
+    "jsonwebtoken": "^8.5.1",
     "mime-types": "^2.1.28",
     "mongodb": "^3.6.3",
     "morgan": "~1.9.1",
