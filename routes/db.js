@@ -138,6 +138,7 @@ router.get("/album/:album", async (req, res) => {
 
   if (!albumData) {
     res.status(404).send("Album not found");
+    return;
   }
 
   res.status(200).send(albumData);
