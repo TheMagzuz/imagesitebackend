@@ -84,6 +84,7 @@ router.post("/image/:image/upvote", async (req, res) => {
 
   if (result.nModified <= 0) {
     res.status(404).end();
+    return;
   }
 
   res.status(200).end();
@@ -101,6 +102,7 @@ router.post("/image/:image/downvote", async (req, res) => {
 
   if (result.nModified <= 0) {
     res.status(404).end();
+    return;
   }
 
   res.status(200).end();
