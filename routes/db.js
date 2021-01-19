@@ -149,4 +149,17 @@ router.get("/tags", async (_req, res) => {
   res.status(200).send(tags);
 });
 
+router.get("/randomImages", async (req, res) => {
+  const search = req.query.q ?? "";
+  let count = req.query.count ?? 10;
+  count = parseInt(count);
+
+  if (isNaN(count)) {
+    count = 10;
+  }
+
+  const images = await db.getRandomImages(count, search);
+  res.status(200).send(images);
+});
+
 export default router;

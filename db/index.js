@@ -101,6 +101,12 @@ export default {
       ])
       .toArray();
   },
+  getRandomImages: async function (count, searchQuery) {
+    const filter = searchToFilter(searchQuery);
+    return await imagesCollection
+      .aggregate([{ $match: filter }, { $sample: { size: count } }])
+      .toArray();
+  },
   deleteImage: async function (id) {
     return await imagesCollection.deleteOne({ id: id });
   },
