@@ -61,6 +61,42 @@ export default {
       .limit(pageSize)
       .toArray();
   },
+  getTags: async function () {
+    return await imagesCollection
+      .aggregate([
+        {
+          $project: {
+            tags: 1,
+          },
+        },
+        {
+          $unwind: {
+            path: "$tags",
+          },
+        },
+        {
+          $group: {
+            _id: "$tags",
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+        {
+          $sort: {
+            count: -1,
+          },
+        },
+        {
+          $project: {
+            tag: "$_id",
+            _id: 0,
+            count: "$count",
+          },
+        },
+      ])
+      .toArray();
+  },
 
   // UPDATE images
   addImage: async function (image) {

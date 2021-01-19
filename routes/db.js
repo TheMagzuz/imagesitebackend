@@ -125,4 +125,9 @@ router.get("/album/:album", async (req, res) => {
   res.status(200).send(albumData);
 });
 
+router.get("/tags", async (_req, res) => {
+  const tags = await db.getTags();
+  res.status(200).send(tags);
+});
+
 export default router;
