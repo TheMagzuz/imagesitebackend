@@ -56,6 +56,22 @@ router.get("/image/:image", async (req, res) => {
   res.status(200).send(imageData);
 });
 
+router.delete("/image/:image", async (req, res) => {
+  let id = req.params.image;
+
+  if (!id) {
+    res.status(400).send("Invalid image id");
+    return;
+  }
+
+  const result = await db.deleteImage(id);
+  if (result.deletedCount <= 0) {
+    res.status(404).end();
+    return;
+  }
+  res.status(200).end();
+});
+
 router.post("/image/:image/upvote", async (req, res) => {
   let id = req.params.image;
 

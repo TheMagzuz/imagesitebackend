@@ -97,6 +97,9 @@ export default {
       ])
       .toArray();
   },
+  deleteImage: async function (id) {
+    return await imagesCollection.deleteOne({ id: id });
+  },
 
   // UPDATE images
   addImage: async function (image) {
