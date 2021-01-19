@@ -55,21 +55,19 @@ router.post("/", async function (req, res) {
     isVideo: videoExtensions.includes(extension),
   };
 
-  let dbPromise = db.addImage(imageData);
-  let handlePromise = Promise.resolve();
+  await db.addImage(imageData);
 
   if (imageData.isAlbum) {
     await image.mv("/tmp/imagesite/" + imageData.id + "/" + imageName);
-    handlePromise = handleAlbum(imageData);
+    await handleAlbum(imageData);
   }
   if (imageData.isVideo) {
     const basePath = path.join("/tmp/imagesite/", imageData.id);
     await image.mv(path.join(basePath, imageName));
-    handlePromise = handleVideo(imageData);
+    await handleVideo(imageData);
   }
 
-  await Promise.all([handlePromise, dbPromise]);
-  fs.rmdir("/tmp/imagesite/" + imageData.id);
+  fs.rmdir("/tmp/imagesite/" + imageData.id, { recursive: true });
 
   res.status(200).send(imageId).end();
 });
@@ -178,13 +176,15 @@ async function handleAlbum(imageData) {
       imageData.id + "/" + (await createThumbnail(files[0], imagesDir));
 
     // ... and upload it to S3
-    toAwait.push(uploadAlbumFile(imageData.id, thumbnailPath));
+    toAwait.push(uploadAlbumFile(imageData.id, path.basename(thumbnailPath)));
   }
 
   // Update the image in the database to have the right thumbnail
-  toAwait.push(db.updateImage(imageData.id), {
-    $set: { thumbnailPath: thumbnailPath },
-  });
+  toAwait.push(
+    db.updateImage(imageData.id, {
+      $set: { thumbnailPath: thumbnailPath },
+    })
+  );
 
   // Wait for all the promises to finish
   await Promise.all(toAwait);
@@ -215,7 +215,7 @@ async function handleVideo(imageData) {
 }
 
 async function uploadAlbumFile(id, file) {
-  const rootDir = "/tmp/imagesite/" + id + "/";
+  const rootDir = "/tmp/imagesite/" + id + "/ext/";
   return s3
     .upload({
       Bucket: BUCKET_NAME,
