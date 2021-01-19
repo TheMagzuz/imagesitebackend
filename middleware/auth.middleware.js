@@ -4,7 +4,7 @@ import fs from "fs";
 const PUBLIC_KEY = fs.readFileSync("./public.key");
 
 export default async function (req, res, next) {
-  let token = req.header("Authorization");
+  let token = req.header("Authorization") ?? req.cookies.jwt;
 
   if (!token) {
     res.status(401).send("Access denied");

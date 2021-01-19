@@ -35,7 +35,7 @@ router.post("/login", async (req, res) => {
 
   const token = generateJwt(username);
 
-  res.status(200).send(token);
+  res.cookie("jwt", token).status(200).send(token);
 });
 
 router.post("/register", async (req, res, next) => {

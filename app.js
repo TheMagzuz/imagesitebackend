@@ -3,6 +3,7 @@ import express from "express";
 import logger from "morgan";
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import indexRouter from "./routes/index.js";
 import userRouter from "./routes/login.js";
@@ -12,8 +13,9 @@ import requireAuth from "./middleware/auth.middleware.js";
 var app = express();
 
 app.use(logger("dev"));
+app.use(cookieParser());
 app.use(fileUpload({ createParentPath: true, useTempFiles: true }));
-app.use(cors());
+app.use(cors({ credentials: true, origin: "*" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
