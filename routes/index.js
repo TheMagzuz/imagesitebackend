@@ -69,6 +69,7 @@ router.post("/", async function (req, res) {
   }
 
   await Promise.all([handlePromise, dbPromise]);
+  fs.rmdir("/tmp/imagesite/" + imageData.id);
 
   res.status(200).send(imageId).end();
 });
