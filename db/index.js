@@ -17,37 +17,41 @@ const imagesCollection = database.collection("images");
 const albumsCollection = database.collection("albums");
 const usersCollection = database.collection("users");
 
+function searchToFilter(searchQuery) {
+  let inTags = [];
+  let ninTags = [];
+
+  if (searchQuery) {
+    for (var tag of searchQuery.split(" ")) {
+      if (tag.startsWith("!")) {
+        ninTags.push(new RegExp(tag.substr(1), "i"));
+      } else {
+        inTags.push(new RegExp(tag), "i");
+      }
+    }
+  }
+
+  let filter = { tags: {} };
+
+  if (inTags.length > 0) {
+    filter.tags.$in = inTags;
+  }
+  if (ninTags.length > 0) {
+    filter.tags.$nin = ninTags;
+  }
+  if (!filter.tags.$in && !filter.tags.$nin) {
+    filter = {};
+  }
+  return filter;
+}
+
 export default {
   // GET images
   getImage: async function (id) {
     return await imagesCollection.findOne({ id: id });
   },
   getImagePage: async function (page, sort, searchQuery) {
-    let inTags = [];
-    let ninTags = [];
-
-    if (searchQuery) {
-      for (var tag of searchQuery.split(" ")) {
-        if (tag.startsWith("!")) {
-          ninTags.push(new RegExp(tag.substr(1), "i"));
-        } else {
-          inTags.push(new RegExp(tag), "i");
-        }
-      }
-    }
-
-    let filter = { tags: {} };
-
-    if (inTags.length > 0) {
-      filter.tags.$in = inTags;
-    }
-    if (ninTags.length > 0) {
-      filter.tags.$nin = ninTags;
-    }
-    if (!filter.tags.$in && !filter.tags.$nin) {
-      filter = {};
-    }
-
+    const filter = searchToFilter(searchQuery);
     let cursor = imagesCollection.find(filter);
 
     if (sort.sortBy == "upvotes") {
