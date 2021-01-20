@@ -81,40 +81,7 @@ router.get("/image/:filename(*)", async (req, res) => {
     return;
   }
 
-  let header;
-
-  try {
-    header = await s3
-      .headObject({ Key: filename, Bucket: BUCKET_NAME })
-      .promise();
-  } catch (e) {
-    if (e.code == "NoSuchKey") {
-      res.status(404).send("File not found");
-      return;
-    } else {
-      res.status(500).end();
-      return;
-    }
-  }
-
-  let streamContent = header.ContentLength >= STREAM_LIMIT;
-
-  res
-    .setHeader("Content-Type", mime.lookup(path.extname(filename)))
-    .setHeader("Cache-control", "public, max-age=900");
-  if (!streamContent) {
-    let data = await s3
-      .getObject({ Key: filename, Bucket: BUCKET_NAME })
-      .promise();
-
-    res.write(data.Body);
-    res.status(200).end();
-  } else {
-    res.setHeader("Content-Length", header.ContentLength);
-    s3.getObject({ Key: filename, Bucket: BUCKET_NAME })
-      .createReadStream()
-      .pipe(res);
-  }
+  res.redirect(process.env.CLOUDFRONT_FULL_URL + "/" + filename);
 });
 
 /* GET: Resized image */
